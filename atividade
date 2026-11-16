@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>O que me motiva a aprender?</title>
+  <style>
+    :root {
+      --wine: #56152f;
+      --cream: #fff9f3;
+      --green: #d8efcf;
+      --ink: #321b27;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #f4e9ed;
+      font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--ink);
+    }
+
+    main {
+      max-width: 760px;
+      margin: 24px auto;
+      padding: clamp(18px, 4vw, 42px);
+      background: var(--cream);
+      border-radius: 24px;
+      box-shadow: 0 12px 40px #56152f16;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      color: var(--wine);
+      font-size: clamp(28px, 5vw, 38px);
+      line-height: 1.15;
+    }
+
+    h2 { margin: 0 0 10px; color: var(--wine); }
+    .subtitle { margin-bottom: 25px; color: #684959; }
+
+    .instruction {
+      margin: 18px 0;
+      padding: 15px 18px;
+      background: var(--green);
+      border-radius: 12px;
+    }
+
+    .question {
+      margin: 14px 0;
+      padding: 18px;
+      background: #fff;
+      border: 1px solid #efdce3;
+      border-radius: 15px;
+    }
+
+    .question p { margin: 0 0 14px; font-weight: 650; }
+    .answers { display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px; }
+    .answers label { position: relative; cursor: pointer; }
+    .answers input { position: absolute; opacity: 0; inset: 0; }
+
+    .answers span {
+      display: block;
+      padding: 8px 0;
+      text-align: center;
+      color: var(--wine);
+      background: #fff;
+      border: 2px solid #e7c8d3;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    .answers input:checked + span {
+      color: #fff;
+      background: var(--wine);
+      border-color: var(--wine);
+    }
+
+    .answers input:focus-visible + span {
+      outline: 3px solid #c77fa1;
+      outline-offset: 2px;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 14px;
+      padding: 14px 24px;
+      color: #fff;
+      background: var(--wine);
+      border: 0;
+      border-radius: 12px;
+      font: 700 16px system-ui, sans-serif;
+      cursor: pointer;
+    }
+
+    button.secondary { color: var(--wine); background: #eecbd8; }
+
+    #result {
+      display: none;
+      margin-top: 24px;
+      padding: 22px;
+      background: var(--green);
+      border-radius: 18px;
+    }
+
+    #result h2 { font-size: 28px; }
+    .score { margin: 12px 0; }
+    .bar { height: 10px; margin-top: 4px; background: #fff; border-radius: 20px; overflow: hidden; }
+    .bar i { display: block; height: 100%; background: var(--wine); border-radius: 20px; }
+    .disclaimer { margin-top: 22px; color: #765b68; font-size: 13px; }
+    .error { color: #ad2045; font-weight: 650; }
+    footer { margin-top: 20px; color: #745b68; font-size: 12px; text-align: center; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>O que me motiva a aprender?</h1>
+
+    <p class="subtitle">
+      Questionário adaptado para uma atividade de Psicologia da Educação.
+      As perguntas foram traduzidas e adaptadas pelo nosso grupo a partir dos itens
+      de Fryer e Oga-Baldwin (2026), para recordar as aulas de Português do 12.º ano.
+    </p>
+
+    <div class="instruction">
+      <strong>Pensa nas tuas aulas de Português do 12.º ano.</strong>
+      <p>
+        Para cada pergunta, escolhe um número de <strong>1</strong> (Discordo fortemente)
+        a <strong>6</strong> (Concordo fortemente). Não existem respostas certas ou erradas.
+      </p>
+    </div>
+
+    <form id="quiz" novalidate></form>
+    <p id="error" role="alert" class="error" aria-live="polite"></p>
+    <button type="button" id="calculate">Descobrir o meu tipo de motivação</button>
+
+    <section id="result" aria-live="polite">
+      <h2 id="type"></h2>
+      <p id="description"></p>
+      <div id="scores"></div>
+      <p class="disclaimer">
+        Resultado ilustrativo: esta adaptação não é um instrumento psicológico validado.
+        Identifica apenas o motivo mais pontuado nas respostas; não reproduz os quatro
+        perfis motivacionais da investigação, calculados através de Análise de Perfis Latentes.
+      </p>
+      <button type="button" class="secondary" id="restart">Responder novamente</button>
+    </section>
+
+    <footer>
+      Atividade pedagógica baseada na Tabela 7 de Fryer, L. K., &amp; Oga-Baldwin, W. L. Q. (2026),
+      <em>How teaching shapes motivations to learn across middle school subjects</em>,
+      <em>Learning and Instruction, 105</em>, 102378.
+      <br>
+      Tradução e adaptação das perguntas pelo grupo da unidade curricular de Psicologia da Educação.
+      Aplicação à disciplina de Português do 12.º ano e reformulação para o passado.
+      <br>
+      DOI: <a href="https://doi.org/10.1016/j.learninstruc.2026.102378">10.1016/j.learninstruc.2026.102378</a>.
+    </footer>
+  </main>
+
+  <script>
+    // Cada pergunta pertence a uma das quatro dimensões motivacionais.
+    const questions =[
+  [
+    "Durante o 12.º ano, achavas que a disciplina de Português era divertida?",
+    "intrinseca"
+  ],
+  [
+    "Durante o 12.º ano, tinhas interesse pela disciplina de Português?",
+    "intrinseca"
+  ],
+  [
+    "Durante o 12.º ano, gostavas de aprender Português?",
+    "intrinseca"
+  ],
+  [
+    "Durante o 12.º ano, achavas que estudar Português seria útil para o teu futuro?",
+    "identificada"
+  ],
+  [
+    "Durante o 12.º ano, querias ser capaz de utilizar os conhecimentos de Português no futuro?",
+    "identificada"
+  ],
+  [
+    "Durante o 12.º ano, querias ter uma carreira em que utilizasses os conhecimentos de Português?",
+    "identificada"
+  ],
+  [
+    "Durante o 12.º ano, querias que os teus professores vissem que dominavas os conhecimentos de Português?",
+    "introjetada"
+  ],
+  [
+    "Durante o 12.º ano, querias ser elogiado pelos teus amigos e familiares pelos teus conhecimentos de Português?",
+    "introjetada"
+  ],
+  [
+    "Durante o 12.º ano, querias que as pessoas à tua volta te considerassem alguém com bons conhecimentos de Português?",
+    "introjetada"
+  ],
+  [
+    "Durante o 12.º ano, achavas que o teu professor de Português ficaria zangado se não participasses nas aulas?",
+    "externa"
+  ],
+  [
+    "Durante o 12.º ano, participavas nas aulas de Português porque era uma regra?",
+    "externa"
+  ],
+  [
+    "Durante o 12.º ano, sentias que não tinhas outra escolha senão participar nas aulas de Português?",
+    "externa"
+  ]
+];
+
+    const names = {
+      intrinseca: "Motivação intrínseca",
+      identificada: "Motivação identificada",
+      introjetada: "Motivação introjetada",
+      externa: "Motivação externa"
+    };
+
+    const descriptions = {
+      intrinseca: "O interesse e o prazer de aprender destacaram-se nas tuas respostas.",
+      identificada: "A utilidade da aprendizagem para o teu futuro destacou-se nas tuas respostas.",
+      introjetada: "O reconhecimento e a aprovação dos outros destacaram-se nas tuas respostas.",
+      externa: "A obrigação e a pressão externa destacaram-se nas tuas respostas."
+    };
+
+    const form = document.getElementById("quiz");
+    const error = document.getElementById("error");
+    const result = document.getElementById("result");
+
+    // Criar as 12 perguntas e seis opções de resposta para cada uma.
+    questions.forEach(([questionText], index) => {
+      const block = document.createElement("div");
+      block.className = "question";
+
+      const title = document.createElement("p");
+      title.textContent = `${index + 1}. ${questionText}`;
+      block.append(title);
+
+      const choices = document.createElement("div");
+      choices.className = "answers";
+
+      for (let value = 1; value <= 6; value++) {
+        const label = document.createElement("label");
+        const input = document.createElement("input");
+        const text = document.createElement("span");
+
+        input.type = "radio";
+        input.name = `q${index}`;
+        input.value = value;
+        input.setAttribute("aria-label", String(value));
+        text.textContent = value;
+
+        label.append(input, text);
+        choices.append(label);
+      }
+
+      block.append(choices);
+      form.append(block);
+    });
+
+    // Calcular a média de cada motivação e destacar a mais elevada.
+    document.getElementById("calculate").addEventListener("click", () => {
+      const totals = { intrinseca: 0, identificada: 0, introjetada: 0, externa: 0 };
+      const counts = { intrinseca: 0, identificada: 0, introjetada: 0, externa: 0 };
+
+      for (let index = 0; index < questions.length; index++) {
+        const selected = form.querySelector(`input[name="q${index}"]:checked`);
+
+        if (!selected) {
+          error.textContent = "Responde às 12 perguntas para veres o resultado.";
+          document.querySelectorAll(".question")[index].scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+          });
+          return;
+        }
+
+        const category = questions[index][1];
+        totals[category] += Number(selected.value);
+        counts[category]++;
+      }
+
+      error.textContent = "";
+
+      const entries = Object.keys(totals)
+        .map(key => ({ key, mean: totals[key] / counts[key] }))
+        .sort((a, b) => b.mean - a.mean);
+
+      const highest = entries.filter(entry =>
+        Math.abs(entry.mean - entries[0].mean) < 1e-9
+      );
+
+      document.getElementById("type").textContent = highest.length === 1
+        ? names[highest[0].key]
+        : "Motivação mista";
+
+      document.getElementById("description").textContent = highest.length === 1
+        ? descriptions[highest[0].key]
+        : "Tiveste a mesma pontuação máxima em " +
+          highest.map(entry => names[entry.key].toLowerCase()).join(" e ") +
+          ". É possível estudar por vários motivos ao mesmo tempo.";
+
+      document.getElementById("scores").innerHTML = entries.map(entry => `
+        <div class="score">
+          <strong>${names[entry.key]}</strong> — ${entry.mean.toFixed(1).replace(".", ",")}/6
+          <div class="bar"><i style="width: ${entry.mean / 6 * 100}%"></i></div>
+        </div>
+      `).join("");
+
+      result.style.display = "block";
+      result.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    document.getElementById("restart").addEventListener("click", () => {
+      form.reset();
+      result.style.display = "none";
+      error.textContent = "";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  </script>
+</body>
+</html>
